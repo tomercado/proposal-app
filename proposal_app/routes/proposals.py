@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required
 from database.db import db
 from database.models import Proposal
+from services.ai_service import organize_proposal_data
 
 proposals_bp = Blueprint('proposals', __name__)
 
@@ -72,6 +73,22 @@ def delete_proposal(id):
 def preview_proposal(id):
     proposal = Proposal.query.get_or_404(id)
     return render_template('dashboard/preview.html', proposal=proposal)
+
+@proposals_bp.route('/proposals/generate-ai', methods=['POST'])
+@login_required
+def generate_ai():
+    data = request.get_json()
+    raw_text = data.get('raw_text', '')
+    
+    if not raw_text:
+        return jsonify({'error': 'No se proporcionó texto'}), 400
+        
+    result = organize_proposal_data(raw_text)
+    
+    if result.get('error'):
+        return jsonify({'error': result['error']}), 500
+        
+    return jsonify(result)
 
 @proposals_bp.route('/proposals/<int:id>')
 @login_required

@@ -13,17 +13,45 @@
 
     {% if request.endpoint == 'proposals.create_proposal' or 'edit' in request.endpoint %}
     <div class="proposal-form-container">
+
+        <!-- SECCIÓN DE INTELIGENCIA ARTIFICIAL -->
+        <div class="ai-assistant-section"
+            style="background: #f1f8e9; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #c5e1a5; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                <span style="font-size: 24px; margin-right: 10px;">🤖</span>
+                <h3 style="color: #33691e; margin: 0;">Asistente de IA (Llama 3)</h3>
+            </div>
+            <p style="color: #558b2f; margin-bottom: 15px;">
+                Pega aquí la información desordenada (correos, notas rápidas, chats) y la IA extraerá el cliente, título
+                y organizará los productos automáticamente.
+            </p>
+            <div class="form-group">
+                <textarea id="raw-input" rows="6"
+                    style="width: 100%; padding: 10px; border: 1px solid #aed581; border-radius: 5px;"
+                    placeholder="Ejemplo: Cotización para Juan Pérez de Multivallas. Necesita 1000 tarjetas de presentación a 130.000 y 5000 volantes media carta a 600.000. Incluir que los precios son más IVA..."></textarea>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button type="button" id="btn-ai-generate" class="btn-primary"
+                    style="background-color: #558b2f; border-color: #558b2f;">
+                    ✨ Organizar con IA
+                </button>
+                <span id="ai-loading" style="display:none; color: #558b2f; font-weight: bold;">
+                    <span class="spinner">↻</span> Procesando... (esto puede tomar unos segundos)
+                </span>
+            </div>
+        </div>
+
         <form method="POST" class="proposal-form">
             <div class="form-section">
                 <h3>Información General</h3>
                 <div class="form-group">
                     <label>Título de la Propuesta</label>
-                    <input type="text" name="title" required placeholder="Ej: Cotización Lona Banner"
+                    <input type="text" id="field-title" name="title" required placeholder="Ej: Cotización Lona Banner"
                         value="{{ proposal.title if proposal else '' }}">
                 </div>
                 <div class="form-group">
                     <label>Nombre del Cliente</label>
-                    <input type="text" name="client_name" required placeholder="Ej: Sr. Juan Pérez"
+                    <input type="text" id="field-client" name="client_name" required placeholder="Ej: Sr. Juan Pérez"
                         value="{{ proposal.client_name if proposal else '' }}">
                 </div>
             </div>
@@ -32,14 +60,14 @@
                 <h3>Contenido de la Carta</h3>
                 <div class="form-group">
                     <label>Texto Introductorio</label>
-                    <textarea name="intro_text" rows="4"
+                    <textarea id="field-intro" name="intro_text" rows="4"
                         placeholder="Es un placer presentarle nuestra cotización...">{{ proposal.intro_text if proposal else 'Es un placer presentarle nuestra cotización para los productos que usted necesita. Hemos tomado en cuenta sus requerimientos y hemos preparado una oferta especial para usted.' }}</textarea>
                 </div>
                 <div class="form-group">
                     <label>Detalle de Productos y Precios</label>
-                    <textarea name="content" rows="10"
+                    <textarea id="field-content" name="content" rows="15"
                         placeholder="Ingrese los detalles de los productos...">{{ proposal.content if proposal else '' }}</textarea>
-                    <small>Puede copiar y pegar aquí el texto de los productos.</small>
+                    <small>Este contenido aparecerá formateado en el PDF.</small>
                 </div>
             </div>
 
@@ -49,6 +77,63 @@
             </div>
         </form>
     </div>
+
+    <!-- Script para manejar la IA -->
+    <script>
+        document.getElementById('btn-ai-generate').addEventListener('click', async function () {
+            const rawText = document.getElementById('raw-input').value;
+            const btn = document.getElementById('btn-ai-generate');
+            const loading = document.getElementById('ai-loading');
+
+            if (!rawText.trim()) {
+                alert('⚠️ Por favor, ingresa texto en el campo del asistente para procesar.');
+                return;
+            }
+
+            // Estado de carga
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+            btn.innerHTML = '⏳ Procesando...';
+            loading.style.display = 'inline-block';
+
+            try {
+                const response = await fetch("{{ url_for('proposals.generate_ai') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ raw_text: rawText })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Rellenar campos automáticamente
+                    if (data.title) document.getElementById('field-title').value = data.title;
+                    if (data.client_name) document.getElementById('field-client').value = data.client_name;
+                    if (data.intro_text) document.getElementById('field-intro').value = data.intro_text;
+                    if (data.content) document.getElementById('field-content').value = data.content;
+
+                    alert('✅ ¡Información organizada con éxito!');
+
+                    // Limpiar raw input opcionalmente
+                    // document.getElementById('raw-input').value = '';
+                } else {
+                    alert('❌ Error: ' + (data.error || 'Ocurrió un error desconocido'));
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error de conexión. Asegúrate de que Ollama esté corriendo.');
+            } finally {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.innerHTML = '✨ Organizar con IA';
+                loading.style.display = 'none';
+            }
+        });
+    </script>
+
     {% else %}
     <div class="proposals-list">
         <table>
