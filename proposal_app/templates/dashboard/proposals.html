@@ -1,14 +1,86 @@
 {% extends "base.html" %}
 
-{% block title %}Propuestas - Proposal App{% endblock %}
+{% block title %}Propuestas{% endblock %}
 
 {% block content %}
 <div class="proposals-page">
-    <h1>Gestión de Propuestas</h1>
-    <button id="create-proposal-btn">Crear Propuesta</button>
-
-    <div class="proposals-list">
-        <!-- Proposals list will be displayed here -->
+    <div class="page-header">
+        <h1>Gestión de Propuestas</h1>
+        {% if request.endpoint == 'proposals.list_proposals' %}
+        <a href="{{ url_for('proposals.create_proposal') }}" class="btn-primary">Crear Propuesta</a>
+        {% endif %}
     </div>
+
+    {% if request.endpoint == 'proposals.create_proposal' or 'edit' in request.endpoint %}
+    <div class="proposal-form-container">
+        <form method="POST" class="proposal-form">
+            <div class="form-section">
+                <h3>Información General</h3>
+                <div class="form-group">
+                    <label>Título de la Propuesta</label>
+                    <input type="text" name="title" required placeholder="Ej: Cotización Lona Banner"
+                        value="{{ proposal.title if proposal else '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Nombre del Cliente</label>
+                    <input type="text" name="client_name" required placeholder="Ej: Sr. Juan Pérez"
+                        value="{{ proposal.client_name if proposal else '' }}">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Contenido de la Carta</h3>
+                <div class="form-group">
+                    <label>Texto Introductorio</label>
+                    <textarea name="intro_text" rows="4"
+                        placeholder="Es un placer presentarle nuestra cotización...">{{ proposal.intro_text if proposal else 'Es un placer presentarle nuestra cotización para los productos que usted necesita. Hemos tomado en cuenta sus requerimientos y hemos preparado una oferta especial para usted.' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Detalle de Productos y Precios</label>
+                    <textarea name="content" rows="10"
+                        placeholder="Ingrese los detalles de los productos...">{{ proposal.content if proposal else '' }}</textarea>
+                    <small>Puede copiar y pegar aquí el texto de los productos.</small>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Guardar Propuesta</button>
+                <a href="{{ url_for('proposals.list_proposals') }}" class="btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+    {% else %}
+    <div class="proposals-list">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Título</th>
+                    <th>Cliente</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proposal in proposals %}
+                <tr>
+                    <td>{{ proposal.created_at.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ proposal.title }}</td>
+                    <td>{{ proposal.client_name }}</td>
+                    <td><span class="status-badge {{ proposal.status }}">{{ proposal.status }}</span></td>
+                    <td class="actions-cell">
+                        <a href="{{ url_for('proposals.preview_proposal', id=proposal.id) }}" class="btn-icon"
+                            title="Ver PDF">👁️</a>
+                        <form action="{{ url_for('proposals.delete_proposal', id=proposal.id) }}" method="POST"
+                            onsubmit="return confirm('¿Eliminar propuesta?')" style="display:inline;">
+                            <button type="submit" class="btn-icon delete" title="Eliminar">🗑️</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

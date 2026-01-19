@@ -16,25 +16,14 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-class Client(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), nullable=False)
-    email = db.Column(db.String(120))
-    phone = db.Column(db.String(50))
-    company = db.Column(db.String(200))
-    address = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # Relationship with proposals
-    proposals = db.relationship('Proposal', backref='client', lazy=True, cascade='all, delete-orphan')
-
 class Proposal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
+    client_name = db.Column(db.String(200), nullable=False) # Nombre directo del cliente
     title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text)
-    amount = db.Column(db.Float, default=0.0)
-    status = db.Column(db.String(50), default='draft')  # draft, sent, accepted, rejected
+    intro_text = db.Column(db.Text) # Texto de "Estimado señor..."
+    content = db.Column(db.Text) # Contenido principal editable
+    status = db.Column(db.String(50), default='draft')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 

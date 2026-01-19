@@ -1,18 +1,159 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="es">
 
-{% block title %}Vista Previa - Proposal App{% endblock %}
+<head>
+    <meta charset="UTF-8">
+    <title>Propuesta - {{ proposal.title }}</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: #525659;
+            display: flex;
+            justify-content: center;
+        }
 
-{% block content %}
-<div class="preview-page">
-    <h1>Vista Previa de Propuesta</h1>
+        .page {
+            background: white;
+            width: 21cm;
+            min-height: 29.7cm;
+            padding: 2.5cm;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box;
+            position: relative;
+        }
 
-    <div class="preview-content">
-        <!-- Proposal preview will be displayed here -->
+        .logo {
+            margin-bottom: 30px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 5px;
+            display: inline-block;
+        }
+
+        .logo h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: black;
+            color: white;
+            padding: 5px 10px;
+            display: inline-block;
+        }
+
+        .logo-subtitle {
+            font-size: 12px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-top: 5px;
+            color: #333;
+        }
+
+        .salutation {
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .content {
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #000;
+        }
+
+        .content p {
+            margin-bottom: 15px;
+        }
+
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 9pt;
+            font-style: italic;
+            color: #333;
+            position: absolute;
+            bottom: 2.5cm;
+            left: 0;
+            right: 0;
+        }
+
+        .no-print {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 8px 16px;
+            cursor: pointer;
+            background: #fff;
+            border: none;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .page {
+                box-shadow: none;
+                width: 100%;
+                height: auto;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="no-print">
+        <button onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+        <button onclick="window.location.href='{{ url_for('proposals.list_proposals') }}'">⬅️ Volver</button>
     </div>
 
-    <div class="actions">
-        <button id="generate-pdf-btn">Generar PDF</button>
-        <button id="back-btn">Volver</button>
+    <div class="page">
+        <div class="logo">
+            <h1>MULTI VALLAS</h1>
+            <div class="logo-subtitle">Impresión • Digital</div>
+        </div>
+
+        <div class="content">
+            <p><strong>Estimado señor {{ proposal.client_name }}</strong></p>
+
+            <p>{{ proposal.intro_text }}</p>
+
+            <!-- Renderizamos el contenido preservando los saltos de línea -->
+            <div style="white-space: pre-wrap;">{{ proposal.content }}</div>
+
+            <p style="margin-top: 30px;">
+                Agradecemos su interés en nuestros productos y servicios. Estamos comprometidos con la calidad y la
+                satisfacción del cliente, por lo que nos aseguraremos de que su pedido se maneje con el más alto nivel
+                de profesionalismo y atención.
+            </p>
+
+            <p>
+                Nos complace recordarle que todos los productos que ofrecemos, incluyendo las lonas banner, las tarjetas
+                y los volantes, son fabricados con papel de primera calidad.
+            </p>
+        </div>
+
+        <div class="footer">
+            MULTIVALLAS S.A.S NIT:901.340.577-4<br>
+            CARRERA 58 # 25-49 B. TRINIDAD TEL: 581 30 11
+        </div>
     </div>
-</div>
-{% endblock %}
+</body>
+
+</html>

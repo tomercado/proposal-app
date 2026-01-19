@@ -1,14 +1,37 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Proposal App{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
+    <nav class="main-nav">
+        <div class="nav-brand">Gestor de Propuestas</div>
+        {% if current_user.is_authenticated %}
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}">Inicio</a>
+            <a href="{{ url_for('proposals.list_proposals') }}">Mis Propuestas</a>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">Cerrar Sesión</a>
+        </div>
+        {% endif %}
+    </nav>
+
     <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
         {% block content %}{% endblock %}
     </div>
 </body>
+
 </html>

@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required
 from database.db import db
-from database.models import Proposal, Client
+from database.models import Proposal
 
 proposals_bp = Blueprint('proposals', __name__)
 
@@ -10,27 +10,26 @@ proposals_bp = Blueprint('proposals', __name__)
 @login_required
 def list_proposals():
     proposals = Proposal.query.order_by(Proposal.created_at.desc()).all()
-    clients = Client.query.all()
-    return render_template('dashboard/proposals.html', proposals=proposals, clients=clients)
+    return render_template('dashboard/proposals.html', proposals=proposals)
 
 @proposals_bp.route('/proposals/create', methods=['GET', 'POST'])
 @login_required
 def create_proposal():
     if request.method == 'POST':
-        client_id = request.form.get('client_id')
+        client_name = request.form.get('client_name')
         title = request.form.get('title')
-        description = request.form.get('description')
-        amount = request.form.get('amount', 0.0)
+        intro_text = request.form.get('intro_text')
+        content = request.form.get('content')
         
-        if not client_id or not title:
+        if not client_name or not title:
             flash('Cliente y título son obligatorios', 'error')
             return redirect(url_for('proposals.list_proposals'))
         
         proposal = Proposal(
-            client_id=client_id,
+            client_name=client_name,
             title=title,
-            description=description,
-            amount=float(amount) if amount else 0.0,
+            intro_text=intro_text,
+            content=content,
             status='draft'
         )
         
@@ -40,18 +39,17 @@ def create_proposal():
         flash('Propuesta creada exitosamente', 'success')
         return redirect(url_for('proposals.list_proposals'))
     
-    clients = Client.query.all()
-    return render_template('dashboard/proposals.html', clients=clients)
+    return render_template('dashboard/proposals.html')
 
 @proposals_bp.route('/proposals/<int:id>/edit', methods=['POST'])
 @login_required
 def edit_proposal(id):
     proposal = Proposal.query.get_or_404(id)
     
-    proposal.client_id = request.form.get('client_id', proposal.client_id)
+    proposal.client_name = request.form.get('client_name', proposal.client_name)
     proposal.title = request.form.get('title', proposal.title)
-    proposal.description = request.form.get('description', proposal.description)
-    proposal.amount = float(request.form.get('amount', proposal.amount))
+    proposal.intro_text = request.form.get('intro_text', proposal.intro_text)
+    proposal.content = request.form.get('content', proposal.content)
     proposal.status = request.form.get('status', proposal.status)
     
     db.session.commit()
@@ -81,10 +79,10 @@ def get_proposal(id):
     proposal = Proposal.query.get_or_404(id)
     return jsonify({
         'id': proposal.id,
-        'client_id': proposal.client_id,
+        'client_name': proposal.client_name,
         'title': proposal.title,
-        'description': proposal.description,
-        'amount': proposal.amount,
+        'intro_text': proposal.intro_text,
+        'content': proposal.content,
         'status': proposal.status
     })
 

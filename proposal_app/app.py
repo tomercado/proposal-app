@@ -6,7 +6,6 @@ from database.models import User
 
 # Import blueprints
 from routes.auth import auth_bp
-from routes.clients import clients_bp
 from routes.proposals import proposals_bp
 from routes.pdf import pdf_bp
 
@@ -28,7 +27,6 @@ def create_app():
     
     # Register blueprints
     app.register_blueprint(auth_bp)
-    app.register_blueprint(clients_bp)
     app.register_blueprint(proposals_bp)
     app.register_blueprint(pdf_bp)
     

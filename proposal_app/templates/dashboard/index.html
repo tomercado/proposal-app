@@ -4,10 +4,16 @@
 
 {% block content %}
 <div class="dashboard">
-    <h1>Dashboard</h1>
-    <nav>
-        <a href="{{ url_for('clients.list_clients') }}">Clientes</a>
-        <a href="{{ url_for('proposals.list_proposals') }}">Propuestas</a>
-    </nav>
+    <h1>Bienvenido, {{ current_user.username }}</h1>
+    <div class="dashboard-actions">
+        <a href="{{ url_for('proposals.create_proposal') }}" class="action-card">
+            <h3>Crear Nueva Propuesta</h3>
+            <p>Genera una cotización profesional</p>
+        </a>
+        <a href="{{ url_for('proposals.list_proposals') }}" class="action-card">
+            <h3>Ver Mis Propuestas</h3>
+            <p>Historial de cotizaciones</p>
+        </a>
+    </div>
 </div>
 {% endblock %}
